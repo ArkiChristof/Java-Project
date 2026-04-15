@@ -1,0 +1,286 @@
+//+------------------------------------------------------+
+//                       | OVERVIEW| 
+//+------------------------------------------------------+
+// Coverage from: Government Registration inside of them National Id, Valid Id and Health Id
+// Patch Added - 0.0.1 Import Java class 
+// Patch Added - 0.0.2 Registration Save Stats - W3C School Reference
+// Patch Added - 0.0.3 Selection Phase
+// Patch Added - 0.0.4 5 Units Id Ref 
+// Patch Added - 0.0.5 nid and hid etc structure Added 
+// Patch Added - 0.0.6 Other ID Added Entry LTO and Financial
+// Patch Added - 0.0.7 Barangay ID Added
+// Patch Added - 0.0.8 Adjustment for Creation Conflict and Login and Register option now guarantees selection using case 1 & 2
+// Patch Added - 0.0.9 else if statement adjustment read
+// Patch Added - 0.1.0 Try Catch Error
+// Patch Added - 0.1.1 Added import java.util.InputMismatchException; // Indicator Catch Up Process
+// Patch Added - 0.1.2 Try-Catch Input Handling Fixes: Declared 'choice', wrapped input with try-catch, removed invalid try and loop
+// Patch Added - 0.1.3 Separated Registration, Login, and ID Cluster into modular methods
+//Patch Added - 0.1.4 Process Integration and Existing Save State Implementation
+// Patch Added - 0.1.5 Inventory Format Added to 3 ID's
+// Patch Added - 0.1.6 Reference Key - W3C SCHOOL REFERENCE SHAFT
+
+//+------------------------------------------------------+
+//                      | Government | 
+//+------------------------------------------------------+
+import java.util.Scanner;
+import java.util.InputMismatchException;
+
+public class Main {
+
+    static String savedUsername = "";
+    static String savedPassword = "";
+    static String generatedRef = "";
+    
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("+------------------------------------------+");
+            System.out.println("+       WELCOME TO GOVERNMENT INSPECT      +");
+            System.out.println("+------------------------------------------+");
+
+            System.out.println("1 - Register");
+            System.out.println("2 - Login");
+            System.out.print("Enter choice: ");
+
+            int choice;
+            try {
+                choice = input.nextInt();
+                input.nextLine(); 
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input!");
+                input.nextLine(); 
+                continue;
+                
+            }
+            switch (choice) {
+                case 1:
+                    register(input);
+                    break;
+                case 2:
+                    login(input);
+                    break;
+                default:
+                    System.out.println("Invalid Choice only 1-2");
+            }
+        }
+    }
+
+    //+------------------------------------------------------+
+    //                  | Registration | 
+    //+------------------------------------------------------+
+    public static void register(Scanner input) {
+        System.out.println("=====[Gov.Registration]======");
+        System.out.print("Create Username: ");
+        savedUsername = input.nextLine();
+
+        System.out.print("Create Password: ");
+        savedPassword = input.nextLine();
+      
+        // REFERENCE SHAFT W3C
+        generatedRef = "" + System.currentTimeMillis();
+            System.out.println("Reference Number: " + generatedRef);
+
+        System.out.println("Account Created Successfully!");
+    }
+
+    //+------------------------------------------------------+
+    //                      | LOGIN | 
+    //+------------------------------------------------------+
+    public static void login(Scanner input) {
+        System.out.print("Enter Username: ");
+        String username = input.nextLine();
+
+        System.out.print("Enter Password: ");
+        String password = input.nextLine();
+
+        if (savedUsername.isEmpty() || savedPassword.isEmpty()) {
+            System.out.println("No existing account found. Please register first.");
+            return;
+        }
+        if (!username.equals(savedUsername) || !password.equals(savedPassword)) {
+            System.out.println("Invalid Login.");
+            return;
+        }
+
+        System.out.println("Existing Save State Found.");
+        System.out.println("Successful");
+
+        selectIDCluster(input);
+    }
+
+    //+------------------------------------------------------+
+    //              | ID Cluster Selection |
+    //+------------------------------------------------------+
+    public static void selectIDCluster(Scanner input) {
+        System.out.println("===== Selection ID =====");
+        System.out.println("(1) National Identification");
+        System.out.println("(2) Health Identification");
+        System.out.println("(3) Financial Identification");
+        System.out.println("(4) Land Transportation Identification");
+        System.out.println("(5) Barangay Identification");
+        System.out.println("============================");
+        System.out.print("Enter choice: ");
+
+        int idChoice;
+        try {
+            idChoice = input.nextInt();
+            input.nextLine();
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid ID selection! Numbers only.");
+            input.nextLine();
+            return;
+        }
+        String userID = savedUsername;
+        String refNum = generatedRef;
+        UserID idObject;
+
+        switch (idChoice) {
+            case 1:
+                NationalID nid = new NationalID();
+                nid.username = userID;
+                nid.referenceNumber = refNum;
+                idObject = nid;
+                break;
+            case 2:
+                HealthID hid = new HealthID();
+                hid.username = userID;
+                hid.referenceNumber = refNum;
+                idObject = hid;
+                break;
+            case 3:
+                FinancialID fid = new FinancialID();
+                fid.username = userID;
+                fid.referenceNumber = refNum;
+                idObject = fid;
+                break;
+            case 4:
+                LandTransportationID lid = new LandTransportationID();
+                lid.username = userID;
+                lid.referenceNumber = refNum;
+                idObject = lid;
+                break;
+            case 5:
+                BarangayID bid = new BarangayID();
+                bid.username = userID;
+                bid.referenceNumber = refNum;
+                idObject = bid;
+                break;
+            default:
+                System.out.println("Invalid ID.");
+                return;
+        } if (idObject.validateID()) {
+            System.out.println("Process Complete.");
+            idObject.displayIDinfo();
+        } else {
+            System.out.println("Validation Failed.");
+        }
+    }
+}
+
+//+------------------------------------------------------+
+//                      | INTERFACE | 
+//+------------------------------------------------------+
+interface UserID { 
+    void displayIDinfo();
+    boolean validateID();
+}
+
+//+------------------------------------------------------+
+//                      | BASE CLASS | 
+//+------------------------------------------------------+
+class IDCard {
+    String username;
+    String referenceNumber;
+}
+
+//+------------------------------------------------------+
+//                  | National ID| 
+//+------------------------------------------------------+
+class NationalID extends IDCard implements UserID {
+    @Override 
+    public void displayIDinfo() {
+        System.out.println("===== [NATIONAL ID] =====");
+        System.out.println("Username: " + username);
+        System.out.println("Reference Number: " + referenceNumber);
+    }
+
+    @Override
+    public boolean validateID() {
+        return true;
+    }
+}
+
+//+------------------------------------------------------+
+//                  | Health ID| 
+//+------------------------------------------------------+
+class HealthID extends IDCard implements UserID {
+    @Override 
+    public void displayIDinfo() {
+        System.out.println("===== [HEALTH ID] =====");
+        System.out.println("Username: " + username);
+        System.out.println("Reference Number: " + referenceNumber);
+    }
+
+    @Override
+    public boolean validateID() {
+        return true;
+    }
+}
+
+//+------------------------------------------------------+
+//                  | Financial ID| 
+//+------------------------------------------------------+
+class FinancialID extends IDCard implements UserID {
+    @Override 
+    public void displayIDinfo() {
+        System.out.println("===== [FINANCIAL ID] =====");
+        System.out.println("Username: " + username);
+        System.out.println("Reference Number: " + referenceNumber);
+    }
+
+    @Override
+    public boolean validateID() {
+        return true;
+    }
+}
+
+//+------------------------------------------------------+
+//          | Land Transportation ID| 
+//+------------------------------------------------------+
+class LandTransportationID extends IDCard implements UserID {
+    @Override 
+    public void displayIDinfo() {
+        System.out.println("===== [LAND TRANSPORTATION ID] =====");
+        System.out.println("Username: " + username);
+        System.out.println("Reference Number: " + referenceNumber);
+    }
+
+    @Override
+    public boolean validateID() {
+        return true;
+    }
+}
+
+//+------------------------------------------------------+
+//                  | Barangay ID| 
+//+------------------------------------------------------+
+class BarangayID extends IDCard implements UserID {
+    @Override 
+    public void displayIDinfo() {
+        System.out.println("===== [BARANGAY ID] =====");
+        System.out.println("Username: " + username);
+        System.out.println("Reference Number: " + referenceNumber);
+    }
+
+    @Override
+    public boolean validateID() {
+        return true;
+    }
+}
+
+
+
+
+
+
