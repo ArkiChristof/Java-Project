@@ -1,8 +1,14 @@
 //+------------------------------------------------------+
 //                      | Government | 
 //+------------------------------------------------------+
+//+------------------------------------------------------+
+//                       | OVERVIEW| 
+//+------------------------------------------------------+
 import java.util.Scanner;
 import java.util.InputMismatchException;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.time.LocalDateTime;
 
 public class Main {
 
@@ -30,8 +36,8 @@ public class Main {
                 System.out.println("Invalid input!");
                 input.nextLine(); 
                 continue;
-                
             }
+
             switch (choice) {
                 case 1:
                     register(input);
@@ -45,27 +51,67 @@ public class Main {
         }
     }
 
-    //+------------------------------------------------------+
-    //                  | Registration | 
-    //+------------------------------------------------------+
+    public static void waitForReturn(Scanner input) {
+        int back = 0;
+        while (back != 1) {
+            try {
+                System.out.print("=====< Return Press 1 =====: ");
+                back = input.nextInt();
+                input.nextLine();
+
+                if (back != 1) {
+                    System.out.println("Wrong input.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Numbers only!");
+                input.nextLine();
+            }
+        }
+    }
+
     public static void register(Scanner input) {
         System.out.println("=====[Gov.Registration]======");
-        System.out.print("Create Username: ");
-        savedUsername = input.nextLine();
 
-        System.out.print("Create Password: ");
-        savedPassword = input.nextLine();
-      
-        // REFERENCE SHAFT W3C
+        String username;
+        String password;
+
+        while (true) {
+            System.out.print("Create Username: ");
+            username = input.nextLine();
+
+            String userPattern = "^[a-zA-Z0-9]{5,12}$";
+            if (Pattern.matches(userPattern, username)) {
+                break;
+            } else {
+                System.out.println("Invalid username! Use 5-20 letters/numbers only.");
+            }
+        }
+
+        while (true) {
+            System.out.print("Create Password: ");
+            password = input.nextLine();
+
+            String passPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$";
+            if (Pattern.matches(passPattern, password)) {
+                break;
+            } else {
+                System.out.println("Weak password! Must contain:");
+                System.out.println("- 8+ characters");
+                System.out.println("- Uppercase + lowercase + number");
+            }
+        }
+
+        savedUsername = username;
+        savedPassword = password;
+        LocalDateTime date = LocalDateTime.now();
+
         generatedRef = "" + System.currentTimeMillis();
-            System.out.println("Reference Number: " + generatedRef);
 
+        System.out.println("Reference Number: " + generatedRef);
+        System.out.println("Date Created: " + date);
         System.out.println("Account Created Successfully!");
     }
 
-    //+------------------------------------------------------+
-    //                      | LOGIN | 
-    //+------------------------------------------------------+
     public static void login(Scanner input) {
         System.out.print("Enter Username: ");
         String username = input.nextLine();
@@ -77,6 +123,7 @@ public class Main {
             System.out.println("No existing account found. Please register first.");
             return;
         }
+
         if (!username.equals(savedUsername) || !password.equals(savedPassword)) {
             System.out.println("Invalid Login.");
             return;
@@ -88,178 +135,86 @@ public class Main {
         selectIDCluster(input);
     }
 
-    //+------------------------------------------------------+
-    //              | ID Cluster Selection |
-    //+------------------------------------------------------+
     public static void selectIDCluster(Scanner input) {
-        System.out.println("===== Selection ID =====");
-        System.out.println("(1) National Identification");
-        System.out.println("(2) Health Identification");
-        System.out.println("(3) Financial Identification");
-        System.out.println("(4) Land Transportation Identification");
-        System.out.println("(5) Barangay Identification");
-        System.out.println("============================");
-        System.out.print("Enter choice: ");
 
-        int idChoice;
-        try {
-            idChoice = input.nextInt();
-            input.nextLine();
-        } catch (InputMismatchException e) {
-            System.out.println("Invalid ID selection! Numbers only.");
-            input.nextLine();
-            return;
+        while (true) {
+            System.out.println("===== Selection ID =====");
+            System.out.println("(1) National Identification");
+            System.out.println("(2) Health Identification");
+            System.out.println("(3) Financial Identification");
+            System.out.println("(4) Land Transportation Identification");
+            System.out.println("(5) Barangay Identification");
+            System.out.println("(0) Logout");
+            System.out.println("============================");
+            System.out.print("Enter choice: ");
+
+            int idChoice;
+            try {
+                idChoice = input.nextInt();
+                input.nextLine();
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid ID selection! Numbers only.");
+                input.nextLine();
+                continue;
+            }
+
+            if (idChoice == 0) {
+                System.out.println("Logging out...");
+                break;
+            }
+
+            String userID = savedUsername;
+            String refNum = generatedRef;
+            LocalDateTime now = LocalDateTime.now();
+            String timeNow = now.toString();
+
+            UserID idObject;
+
+            switch (idChoice) {
+                case 1:
+                    NationalID nid = new NationalID();
+                    nid.username = userID;
+                    nid.referenceNumber = refNum;
+                    idObject = nid;
+                    break;
+                case 2:
+                    HealthID hid = new HealthID();
+                    hid.username = userID;
+                    hid.referenceNumber = refNum;
+                    idObject = hid;
+                    break;
+                case 3:
+                    FinancialID fid = new FinancialID();
+                    fid.username = userID;
+                    fid.referenceNumber = refNum;
+                    idObject = fid;
+                    break;
+                case 4:
+                    LandTransportationID lid = new LandTransportationID();
+                    lid.username = userID;
+                    lid.referenceNumber = refNum;
+                    idObject = lid;
+                    break;
+                case 5:
+                    BarangayID bid = new BarangayID();
+                    bid.username = userID;
+                    bid.referenceNumber = refNum;
+                    idObject = bid;
+                    break;
+                default:
+                    System.out.println("Invalid ID.");
+                    continue;
+            }
+
+            ((IDCard) idObject).date = timeNow;
+
+            if (idObject.validateID()) {
+                System.out.println("Process Complete.");
+                idObject.displayIDinfo();
+                waitForReturn(input);
+            } else {
+                System.out.println("Validation Failed.");
+            }
         }
-        String userID = savedUsername;
-        String refNum = generatedRef;
-        UserID idObject;
-
-        switch (idChoice) {
-            case 1:
-                NationalID nid = new NationalID();
-                nid.username = userID;
-                nid.referenceNumber = refNum;
-                idObject = nid;
-                break;
-            case 2:
-                HealthID hid = new HealthID();
-                hid.username = userID;
-                hid.referenceNumber = refNum;
-                idObject = hid;
-                break;
-            case 3:
-                FinancialID fid = new FinancialID();
-                fid.username = userID;
-                fid.referenceNumber = refNum;
-                idObject = fid;
-                break;
-            case 4:
-                LandTransportationID lid = new LandTransportationID();
-                lid.username = userID;
-                lid.referenceNumber = refNum;
-                idObject = lid;
-                break;
-            case 5:
-                BarangayID bid = new BarangayID();
-                bid.username = userID;
-                bid.referenceNumber = refNum;
-                idObject = bid;
-                break;
-            default:
-                System.out.println("Invalid ID.");
-                return;
-        } if (idObject.validateID()) {
-            System.out.println("Process Complete.");
-            idObject.displayIDinfo();
-        } else {
-            System.out.println("Validation Failed.");
-        }
     }
 }
-
-//+------------------------------------------------------+
-//                      | INTERFACE | 
-//+------------------------------------------------------+
-interface UserID { 
-    void displayIDinfo();
-    boolean validateID();
-}
-
-//+------------------------------------------------------+
-//                      | BASE CLASS | 
-//+------------------------------------------------------+
-class IDCard {
-    String username;
-    String referenceNumber;
-}
-
-//+------------------------------------------------------+
-//                  | National ID| 
-//+------------------------------------------------------+
-class NationalID extends IDCard implements UserID {
-    @Override 
-    public void displayIDinfo() {
-        System.out.println("===== [NATIONAL ID] =====");
-        System.out.println("Username: " + username);
-        System.out.println("Reference Number: " + referenceNumber);
-    }
-
-    @Override
-    public boolean validateID() {
-        return true;
-    }
-}
-
-//+------------------------------------------------------+
-//                  | Health ID| 
-//+------------------------------------------------------+
-class HealthID extends IDCard implements UserID {
-    @Override 
-    public void displayIDinfo() {
-        System.out.println("===== [HEALTH ID] =====");
-        System.out.println("Username: " + username);
-        System.out.println("Reference Number: " + referenceNumber);
-    }
-
-    @Override
-    public boolean validateID() {
-        return true;
-    }
-}
-
-//+------------------------------------------------------+
-//                  | Financial ID| 
-//+------------------------------------------------------+
-class FinancialID extends IDCard implements UserID {
-    @Override 
-    public void displayIDinfo() {
-        System.out.println("===== [FINANCIAL ID] =====");
-        System.out.println("Username: " + username);
-        System.out.println("Reference Number: " + referenceNumber);
-    }
-
-    @Override
-    public boolean validateID() {
-        return true;
-    }
-}
-
-//+------------------------------------------------------+
-//          | Land Transportation ID| 
-//+------------------------------------------------------+
-class LandTransportationID extends IDCard implements UserID {
-    @Override 
-    public void displayIDinfo() {
-        System.out.println("===== [LAND TRANSPORTATION ID] =====");
-        System.out.println("Username: " + username);
-        System.out.println("Reference Number: " + referenceNumber);
-    }
-
-    @Override
-    public boolean validateID() {
-        return true;
-    }
-}
-
-//+------------------------------------------------------+
-//                  | Barangay ID| 
-//+------------------------------------------------------+
-class BarangayID extends IDCard implements UserID {
-    @Override 
-    public void displayIDinfo() {
-        System.out.println("===== [BARANGAY ID] =====");
-        System.out.println("Username: " + username);
-        System.out.println("Reference Number: " + referenceNumber);
-    }
-
-    @Override
-    public boolean validateID() {
-        return true;
-    }
-}
-
-
-
-
-
-
