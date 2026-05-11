@@ -42,3 +42,7 @@
 // Receipt now including Deduction Fee within others
 // Patch Added 0.3.1 Date Added import java.time.LocalDateTime;
 // Patch Added - 0.3.2 Fixed timestamp null issue by properly assigning date using IDCard casting after ID creation
+// Patch Added - 0.3.3 Full Missing Class Integration and Compile Stability Fix
+// Patch Added - 0.3.4 Abstract IDCard Applied and Unsafe Casting Removed
+// Patch Added - 0.3.5 Username Regex Length Corrected and Date Formatter Applied
+// Patch Added - 0.3.6 
