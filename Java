@@ -1,21 +1,204 @@
 //+------------------------------------------------------+
-//                      | Government | 
-//+------------------------------------------------------+
-//+------------------------------------------------------+
-//                       | OVERVIEW| 
+//|                     Government                       |
 //+------------------------------------------------------+
 import java.util.Scanner;
 import java.util.InputMismatchException;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Collections; // new
 
-public class Main {
+class DataRecord<T> {
+    private T data;
 
-    static String savedUsername = "";
-    static String savedPassword = "";
-    static String generatedRef = "";
+    public void setValue(T dt) {
+        data = dt;
+    }
+
+    public T getValue() {
+        return data;
+    }
+}
+
+abstract class IDCard {
+    String username;
+    String referenceNumber;
+    String date;
+    String Fullname;
+    String Address;
+    BloodType Bloodtype;
+         enum BloodType {
+    A_POSITIVE,
+    A_NEGATIVE,
+    B_POSITIVE,
+    B_NEGATIVE,
+    AB_POSITIVE,
+    AB_NEGATIVE,
+    O_POSITIVE,
+    O_NEGATIVE
+}
+
+    String PlaceBirth;
+    String Birthday;
+    String Nationality;
+    int sortingPriority; 
+
+    abstract boolean validateID();
+    abstract void displayIDinfo();
+}
+
+class NationalID extends IDCard {
+    public NationalID() {
+    sortingPriority = 1;}
+    public boolean validateID() { return true; }
+    public void displayIDinfo() {
+        System.out.println("===== NATIONAL ID =====");
+        System.out.println("Username: " + username);
+        System.out.println("Reference Number: " + referenceNumber);
+        System.out.println("Date: " + date);
+        System.out.println("------------Other Information------------");
+        System.out.println("Full Name: " + Fullname);
+        System.out.println("Birthday: " + Birthday);
+        System.out.println("Place of Birth: " + PlaceBirth);
+        System.out.println("Nationality: " + Nationality);
+        System.out.println("Blood Type: " + (Bloodtype != null ? Bloodtype.toString() : " "));
+        System.out.println("Address: " + Address);
+    }
+}
+
+class HealthID extends IDCard {
+    public HealthID() {
+        sortingPriority = 2; }
+    public boolean validateID() { return true; }
+    public void displayIDinfo() {
+        System.out.println("===== HEALTH ID =====");
+        System.out.println("Username: " + username);
+        System.out.println("Reference Number: " + referenceNumber);
+        System.out.println("Date: " + date);
+        System.out.println("Full Name: " + Fullname);
+        System.out.println("Blood Type: " + String.valueOf(Bloodtype));
+    }
+}
+
+class FinancialID extends IDCard {
+    double amount = 500; // Base balance value
+    double var1;          // Electric base deduction
+    double var2;          // Hydro base deduction
+    double total;         // Remainder output
+
+    public FinancialID() { 
+        sortingPriority = 3; 
+        calculateDeductions();
+    }
+
+    public void calculateDeductions() {
+    var1 = amount * 0.12;
+    var2 = amount * 0.10;
+    total = amount - var1 - var2;
     
+}
+    public boolean validateID() { 
+        return true; 
+    }
+
+ @Override
+public void displayIDinfo() {
+    System.out.println("==============================================");
+    System.out.println("              FINANCIAL ID RECEIPT            ");
+    System.out.println("==============================================");
+    System.out.println("Username: " + username);
+    System.out.println("Reference No: " + referenceNumber);
+    System.out.println("Date: " + date);
+    System.out.println("==============================================");
+
+    System.out.printf("%-15s %-15s %-15s%n",
+            "INVENTORY", "CURRENT FEE", "DEDUCTION");
+
+    System.out.println("==============================================");
+
+    System.out.printf("%-15s %-15.2f %-15.2f%n",
+            "Electricity", amount, var1);
+
+    System.out.printf("%-15s %-15.2f %-15.2f%n",
+            "Water", amount, var2);
+
+    System.out.println("==============================================");
+
+    System.out.printf("%-15s %-15s %-15.2f%n",
+            "TOTAL", "", total);
+
+    System.out.println("==============================================");
+}
+    }
+
+
+class LandTransportationID extends IDCard {
+    public LandTransportationID() {
+        sortingPriority = 4; }
+    public boolean validateID() { return true; }
+    public void displayIDinfo() {
+        System.out.println("===== LAND TRANSPORTATION ID =====");
+        System.out.println("Username: " + username);
+        System.out.println("Reference Number: " + referenceNumber);
+        System.out.println("Date: " + date);
+        System.out.println("Full Name: " + Fullname);
+    }
+}
+
+class BarangayID extends IDCard {
+    public BarangayID() {
+        sortingPriority = 5; }
+    public boolean validateID() { return true; }
+    public void displayIDinfo() {
+        System.out.println("===== BARANGAY ID =====");
+        System.out.println("Username: " + username);
+        System.out.println("Reference Number: " + referenceNumber);
+        System.out.println("Date: " + date);
+        System.out.println("Full Name: " + Fullname);
+        System.out.println("Address: " + Address);
+    }
+}
+
+class IDProcessor extends Thread {
+          private final IDCard idCard;
+          public IDProcessor(IDCard card, String threadName) {
+          idCard = card;
+    setName(threadName);
+     }
+    
+
+    @Override
+    public void run() {
+        try {
+            System.out.println("[SYSTEM] " + getName() + "processing has started.");
+            Thread.sleep(1000); 
+            
+            if (idCard.validateID()) {
+                idCard.displayIDinfo();
+            } else {
+                System.out.println("===== Process Failed :( =====" + getName());
+            }
+            System.out.println("[SYSTEM] " + getName() + " completed.");
+            System.out.println("------------------------------------------");
+        } catch (InterruptedException e) {
+            System.out.println("[SYSTEM] Thread interrupted.");
+        }
+    }
+}
+public class Main {
+    static DataRecord<String> savedUsername = new DataRecord<>();
+    static DataRecord<String> savedPassword = new DataRecord<>();
+    static DataRecord<String> savedFullname = new DataRecord<>();
+    static DataRecord<String> generatedRef = new DataRecord<>();
+    static DataRecord<String> savedBirthday = new DataRecord<>();
+    static DataRecord<String> savedAddress = new DataRecord<>();
+    static DataRecord<String> savedPlacebirth = new DataRecord<>();
+    static DataRecord<String> savedNationality = new DataRecord<>();
+    static DataRecord<IDCard.BloodType> savedBloodtype = new DataRecord<>();
+
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
 
@@ -23,18 +206,18 @@ public class Main {
             System.out.println("+------------------------------------------+");
             System.out.println("+       WELCOME TO GOVERNMENT INSPECT      +");
             System.out.println("+------------------------------------------+");
-
             System.out.println("1 - Register");
             System.out.println("2 - Login");
+            System.out.println("0 - Exit");
             System.out.print("Enter choice: ");
 
             int choice;
             try {
                 choice = input.nextInt();
-                input.nextLine(); 
+                input.nextLine();
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input!");
-                input.nextLine(); 
+                input.nextLine();
                 continue;
             }
 
@@ -45,53 +228,36 @@ public class Main {
                 case 2:
                     login(input);
                     break;
+                case 0:
+                    System.out.println("System Closed.");
+                    input.close();
+                    return;
                 default:
-                    System.out.println("Invalid Choice only 1-2");
-            }
-        }
-    }
-
-    public static void waitForReturn(Scanner input) {
-        int back = 0;
-        while (back != 1) {
-            try {
-                System.out.print("=====< Return Press 1 =====: ");
-                back = input.nextInt();
-                input.nextLine();
-
-                if (back != 1) {
-                    System.out.println("Wrong input.");
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Numbers only!");
-                input.nextLine();
+                    System.out.println("Invalid Choice only 0-2");
             }
         }
     }
 
     public static void register(Scanner input) {
         System.out.println("=====[Gov.Registration]======");
-
         String username;
         String password;
-
+        
         while (true) {
-            System.out.print("Create Username: ");
+            System.out.print("Account Create Username: ");
             username = input.nextLine();
-
-            String userPattern = "^[a-zA-Z0-9]{5,12}$";
+            String userPattern = "^[a-zA-Z0-9]{5,20}$";
             if (Pattern.matches(userPattern, username)) {
                 break;
             } else {
-                System.out.println("Invalid username! Use 5-20 letters/numbers only.");
+                System.out.println("Invalid username Use 5-20 letters/numbers only.");
             }
         }
 
         while (true) {
             System.out.print("Create Password: ");
             password = input.nextLine();
-
-            String passPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$";
+            String passPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d@#$%^&+=!]{8,}$";
             if (Pattern.matches(passPattern, password)) {
                 break;
             } else {
@@ -101,42 +267,95 @@ public class Main {
             }
         }
 
-        savedUsername = username;
-        savedPassword = password;
+        System.out.println("+------------------------------------------+");
+        System.out.println("          Additional Information           +");
+        System.out.println("+------------------------------------------+");
+    
+        System.out.print("Enter Full Name: ");
+        savedFullname.setValue(input.nextLine());
+        System.out.print("Enter Birthday: ");
+        savedBirthday.setValue(input.nextLine());
+        System.out.print("Enter Address: ");
+        savedAddress.setValue(input.nextLine());
+        System.out.print("Enter Place of Birth: ");
+        savedPlacebirth.setValue(input.nextLine());
+        System.out.print("Enter Nationality: ");
+        savedNationality.setValue(input.nextLine());
+        
+        while (true) {
+            System.out.println("Note: Capital Letter: Given A B AB O should +- ");
+            System.out.print("Enter Blood Type: ");
+            String bType = input.nextLine().toUpperCase();
+            String bloodPattern = "^(A|B|AB|O)[+-]$";
+
+            if (Pattern.matches(bloodPattern, bType)) {
+
+                switch (bType) {
+                    case "A+":
+                        savedBloodtype.setValue(IDCard.BloodType.A_POSITIVE);
+                        break;
+                    case "A-":
+                        savedBloodtype.setValue(IDCard.BloodType.A_NEGATIVE);
+                        break;
+                    case "B+":
+                        savedBloodtype.setValue(IDCard.BloodType.B_POSITIVE);
+                        break;
+                    case "B-":
+                        savedBloodtype.setValue(IDCard.BloodType.B_NEGATIVE);
+                        break;
+                    case "AB+":
+                        savedBloodtype.setValue(IDCard.BloodType.AB_POSITIVE);
+                        break;
+                    case "AB-":
+                        savedBloodtype.setValue(IDCard.BloodType.AB_NEGATIVE);
+                        break;
+                    case "O+":
+                        savedBloodtype.setValue(IDCard.BloodType.O_POSITIVE);
+                        break;
+                    case "O-":
+                        savedBloodtype.setValue(IDCard.BloodType.O_NEGATIVE);
+                        break;
+                }
+
+                break;
+            } else {
+                System.out.println("Invalid Blood Type!");
+            }
+        }
+        savedUsername.setValue(username);
+        savedPassword.setValue(password);
+
         LocalDateTime date = LocalDateTime.now();
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        generatedRef = "" + System.currentTimeMillis();
+        generatedRef.setValue("" + System.currentTimeMillis());
 
-        System.out.println("Reference Number: " + generatedRef);
-        System.out.println("Date Created: " + date);
+        System.out.println("Reference Number: " + generatedRef.getValue());
+        System.out.println("Date Created: " + date.format(format));
         System.out.println("Account Created Successfully!");
     }
 
     public static void login(Scanner input) {
-        System.out.print("Enter Username: ");
-        String username = input.nextLine();
-
-        System.out.print("Enter Password: ");
-        String password = input.nextLine();
-
-        if (savedUsername.isEmpty() || savedPassword.isEmpty()) {
+        if (savedUsername.getValue() == null || savedPassword.getValue() == null) {
             System.out.println("No existing account found. Please register first.");
             return;
         }
 
-        if (!username.equals(savedUsername) || !password.equals(savedPassword)) {
+        System.out.print("Enter Username: ");
+        String username = input.nextLine();
+        System.out.print("Enter Password: ");
+        String password = input.nextLine();
+
+        if (!username.equals(savedUsername.getValue()) || !password.equals(savedPassword.getValue())) {
             System.out.println("Invalid Login.");
             return;
         }
 
-        System.out.println("Existing Save State Found.");
-        System.out.println("Successful");
-
+        System.out.println("Login Successful!");
         selectIDCluster(input);
     }
 
     public static void selectIDCluster(Scanner input) {
-
         while (true) {
             System.out.println("===== Selection ID =====");
             System.out.println("(1) National Identification");
@@ -144,6 +363,7 @@ public class Main {
             System.out.println("(3) Financial Identification");
             System.out.println("(4) Land Transportation Identification");
             System.out.println("(5) Barangay Identification");
+            System.out.println("(6) Data Receipt Request");
             System.out.println("(0) Logout");
             System.out.println("============================");
             System.out.print("Enter choice: ");
@@ -163,58 +383,214 @@ public class Main {
                 break;
             }
 
-            String userID = savedUsername;
-            String refNum = generatedRef;
-            LocalDateTime now = LocalDateTime.now();
-            String timeNow = now.toString();
+            if (idChoice == 6) {
+                processDataReceiptRequest(input);
+                continue;
+            }
 
-            UserID idObject;
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String timeNow = now.format(format);
+
+            IDCard idObject;
+            String threadTitle;
 
             switch (idChoice) {
                 case 1:
                     NationalID nid = new NationalID();
-                    nid.username = userID;
-                    nid.referenceNumber = refNum;
+                    nid.Birthday = savedBirthday.getValue();
+                    nid.PlaceBirth = savedPlacebirth.getValue();
+                    nid.Nationality = savedNationality.getValue();
+                    nid.Bloodtype = savedBloodtype.getValue();
                     idObject = nid;
+                    threadTitle = "NationalID-Thread";
                     break;
                 case 2:
                     HealthID hid = new HealthID();
-                    hid.username = userID;
-                    hid.referenceNumber = refNum;
+                    hid.PlaceBirth = savedPlacebirth.getValue();
+                    hid.Bloodtype = savedBloodtype.getValue();
                     idObject = hid;
+                    threadTitle = "HealthID-Thread";
                     break;
                 case 3:
                     FinancialID fid = new FinancialID();
-                    fid.username = userID;
-                    fid.referenceNumber = refNum;
+                    fid.Nationality = savedNationality.getValue();
+                    
+                    
+                    System.out.print("Enter Financial Amount (Default 1000): ");
+                    try {
+                        fid.amount = input.nextDouble();
+                        input.nextLine();
+                    } catch (Exception e) {
+                        fid.amount = 500;
+                        input.nextLine();
+                    }
+                    fid.calculateDeductions(); 
+                    
                     idObject = fid;
+                    threadTitle = "FinancialID-Thread";
                     break;
                 case 4:
                     LandTransportationID lid = new LandTransportationID();
-                    lid.username = userID;
-                    lid.referenceNumber = refNum;
+                    lid.PlaceBirth = savedPlacebirth.getValue();
+                    lid.Nationality = savedNationality.getValue();
                     idObject = lid;
+                    threadTitle = "LandTransportationID-Thread";
                     break;
                 case 5:
                     BarangayID bid = new BarangayID();
-                    bid.username = userID;
-                    bid.referenceNumber = refNum;
+                    bid.Nationality = savedNationality.getValue();
                     idObject = bid;
+                    threadTitle = "BarangayID-Thread";
                     break;
                 default:
-                    System.out.println("Invalid ID.");
+                    System.out.println("Invalid Choice.");
                     continue;
             }
 
-            ((IDCard) idObject).date = timeNow;
+            idObject.username = savedUsername.getValue();
+            idObject.referenceNumber = generatedRef.getValue();
+            idObject.Fullname = savedFullname.getValue();
+            idObject.Address = savedAddress.getValue();
+            idObject.date = timeNow;
 
-            if (idObject.validateID()) {
-                System.out.println("Process Complete.");
-                idObject.displayIDinfo();
-                waitForReturn(input);
-            } else {
-                System.out.println("Validation Failed.");
+            IDProcessor processorThread = new IDProcessor(idObject, threadTitle);
+            processorThread.start();
+            try {
+                processorThread.join(); 
+            } catch (InterruptedException e) {
+                System.out.println("Thread interrupted.");
+            }
+            Scanner pause = new Scanner(System.in);
+            System.out.println("-------Press 1 to return to dashboard...");
+    while (true) {
+          String back = pause.nextLine();
+          if (back.equals("1")) {
+        break;
+        
+    } else {
+        System.out.println("====== Press 1 only to return ====== ");
+    }
+}
+        }
+    }
+
+    public static void printSelectedIDs(List<? extends IDCard> trackingList) {
+        System.out.println("==========================================");
+        System.out.println("       PROCESSING ORDERLY ID RECEIPT      ");
+        System.out.println("==========================================");
+
+        for (IDCard card : trackingList) {
+            String tName = card.getClass().getSimpleName() + "====== Existing Thread Completed.====== ";
+            IDProcessor thread = new IDProcessor(card, tName);
+            thread.start();
+            try {
+                thread.join(); 
+            } catch (InterruptedException e) {
+                System.out.println("Receipt execution disrupted.");
             }
         }
     }
+
+    public static void processDataReceiptRequest(Scanner input) {
+        System.out.print("Do you like to print the ID? (YES/NO): ");
+        String answer = input.nextLine().trim().toUpperCase();
+
+        if (answer.equals("NO")) {
+            System.out.println("Returning...");
+            return; 
+        } else if (!answer.equals("YES")) {
+            System.out.println("Invalid response");
+            return;
+        }
+
+        System.out.println("==========================================");
+        System.out.println("Unit 1: National Identification");
+        System.out.println("Unit 2: Health Identification");
+        System.out.println("Unit 3: Financial Identification");
+        System.out.println("Unit 4: Land Transportation Identification");
+        System.out.println("Unit 5: Barangay Identification");
+        System.out.println("==========================================");
+        System.out.print("Input your numbers separated by spaces (3 1 2): ");
+        
+        String inputLine = input.nextLine();
+        String[] parts = inputLine.trim().split("\\s+");
+        
+        List<IDCard> userSelectionList = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String timeNow = now.format(format);
+
+        for (String part : parts) {
+            if (part.isEmpty()) continue;
+            try {
+                int selectedUnit = Integer.parseInt(part);
+                IDCard idObject = null;
+
+                switch (selectedUnit) {
+                    case 1: idObject = new NationalID(); 
+                            idObject.Birthday = savedBirthday.getValue();
+                            idObject.PlaceBirth = savedPlacebirth.getValue();
+                            idObject.Nationality = savedNationality.getValue();
+                            idObject.Bloodtype = savedBloodtype.getValue();
+                            break;
+                    case 2: idObject = new HealthID(); 
+                            idObject.PlaceBirth = savedPlacebirth.getValue();
+                            idObject.Bloodtype = savedBloodtype.getValue();
+                            break;
+                    case 3: 
+                            FinancialID fid = new FinancialID(); 
+                            fid.Nationality = savedNationality.getValue();
+                            System.out.print("Enter custom receipt amount: ");
+                            try {
+                                fid.amount = input.nextDouble();
+                                input.nextLine();
+                            } catch (Exception e) {
+                                fid.amount = 1000;
+                                input.nextLine();
+                            }
+                            fid.calculateDeductions();
+                            idObject = fid;
+                            break;
+                    case 4: idObject = new LandTransportationID(); 
+                            idObject.PlaceBirth = savedPlacebirth.getValue();
+                            idObject.Nationality = savedNationality.getValue();
+                            break;
+                    case 5: idObject = new BarangayID(); 
+                            idObject.Nationality = savedNationality.getValue();
+                            break;
+                }
+
+                if (idObject != null) {
+                    idObject.username = savedUsername.getValue();
+                    idObject.referenceNumber = generatedRef.getValue();
+                    idObject.Fullname = savedFullname.getValue();
+                    idObject.Address = savedAddress.getValue();
+                    idObject.date = timeNow;
+                    userSelectionList.add(idObject);
+                }
+            } catch (NumberFormatException e) {
+            }
+        }
+
+        if (userSelectionList.isEmpty()) {
+            System.out.println("No valid units selected.");
+            return;
+        }
+
+        
+        Collections.sort(userSelectionList, new Comparator<IDCard>() {
+            @Override
+            public int compare(IDCard A1, IDCard A2) {
+                return Integer.compare(A1.sortingPriority, A2.sortingPriority);
+            }
+        });
+
+        printSelectedIDs(userSelectionList);
+    }
 }
+
+
+
+
+
